@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Letra para Slides — gerador de PowerPoint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<style>
+  :root{
+    --bg: #14182B;
+    --card: #1E2340;
+    --card-edge: #2B3157;
+    --gold: #E3B23C;
+    --coral: #E2725B;
+    --ink: #F3F0E6;
+    --muted: #9098B5;
+    --faint: #6A7195;
+    --navy: #1B3358;
+    --navy-fg: #F3F0E6;
+    --red: #C0392B;
+    --red-fg: #FFF5EC;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:40px 28px 64px;
+  }
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:32px;
+    border-bottom:1px solid var(--card-edge);
+    padding-bottom:24px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:32px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  h1 em{
+    font-style:italic;
+    color:var(--gold);
+  }
+  .tagline{
+    font-size:13px;
+    color:var(--muted);
+    font-family:'IBM Plex Mono', monospace;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+  }
+  .layout{
+    display:grid;
+    grid-template-columns:minmax(0,380px) 1fr;
+    gap:32px;
+  }
+  @media (max-width: 880px){
+    .layout{grid-template-columns:1fr;}
+  }
+  .panel{
+    background:var(--card);
+    border:1px solid var(--card-edge);
+    border-radius:14px;
+    padding:24px;
+  }
+  label{
+    display:block;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.07em;
+    color:var(--faint);
+    font-family:'IBM Plex Mono', monospace;
+    margin:20px 0 8px;
+  }
+  label:first-child{margin-top:0;}
+  input[type=text], textarea, select{
+    width:100%;
+    background:#10132480;
+    border:1px solid var(--card-edge);
+    border-radius:8px;
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+    padding:11px 12px;
+    outline:none;
+    transition:border-color .15s;
+  }
+  input[type=text]:focus, textarea:focus, select:focus{
+    border-color:var(--gold);
+  }
+  #buscarLetra{
+    white-space:nowrap;
+    background:none;
+    border:1px solid var(--card-edge);
+    border-radius:8px;
+    color:var(--muted);
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    padding:0 14px;
+    cursor:pointer;
+    transition:border-color .15s, color .15s;
+  }
+  #buscarLetra:hover{
+    color:var(--gold);
+    border-color:var(--gold);
+  }
+  #importBtn{
+    white-space:nowrap;
+    background:none;
+    border:1px solid var(--card-edge);
+    border-radius:8px;
+    color:var(--muted);
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    padding:6px 12px;
+    cursor:pointer;
+    transition:border-color .15s, color .15s;
+  }
+  #importBtn:hover{
+    color:var(--gold);
+    border-color:var(--gold);
+  }
+  #importBtn:disabled{
+    opacity:0.5;
+    cursor:default;
+  }
+  #limparLetra{
+    white-space:nowrap;
+    background:none;
+    border:1px solid var(--card-edge);
+    border-radius:8px;
+    color:var(--muted);
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    padding:6px 12px;
+    cursor:pointer;
+    transition:border-color .15s, color .15s;
+  }
+  #limparLetra:hover{
+    color:#E8746B;
+    border-color:#E8746B;
+  }
+  textarea{
+    min-height:260px;
+    resize:vertical;
+    line-height:1.6;
+    font-family:'Fraunces', serif;
+    font-size:16px;
+  }
+  .hint{
+    font-size:12px;
+    color:var(--faint);
+    margin-top:6px;
+    line-height:1.5;
+  }
+  .row2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .checkline{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:18px;
+    font-size:14px;
+    color:var(--ink);
+    text-transform:none;
+    letter-spacing:normal;
+    font-family:'Inter', sans-serif;
+    cursor:pointer;
+  }
+  .checkline input{
+    width:16px;height:16px;
+    accent-color:var(--gold);
+    cursor:pointer;
+  }
+  /* ── Color Panel System ── */
+  .color-panel{
+    background: #10132460;
+    border: 1px solid var(--card-edge);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: 16px;
+  }
+  .color-panel-title{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    color: var(--faint);
+    margin: 0 0 12px;
+  }
+  .color-row{
+    display: flex;
+    align-items: center;
+    min-height: 30px;
+  }
+  .color-row + .color-row{
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #ffffff08;
+  }
+  .color-row-label{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--faint);
+    width: 90px;
+    min-width: 90px;
+    flex-shrink: 0;
+    line-height: 1.3;
+  }
+  .swatches{
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .swatch{
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    position: relative;
+    transition: transform .12s, border-color .12s, box-shadow .12s;
+    flex-shrink: 0;
+  }
+  .swatch:hover{
+    transform: scale(1.2);
+    z-index: 2;
+  }
+  .swatch.active{
+    border-color: var(--gold);
+    box-shadow: 0 0 0 1px var(--gold);
+  }
+  .swatch-none{
+    background: transparent !important;
+    border: 1.5px dashed #6A7195 !important;
+  }
+  .swatch-none svg{
+    position:absolute; top:0; left:0; width:100%; height:100%; opacity:0.45;
+  }
+  button#gen{
+    margin-top:26px;
+    width:100%;
+    background:var(--gold);
+    color:#2B1D06;
+    border:none;
+    border-radius:9px;
+    padding:14px;
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    transition:opacity .15s;
+  }
+  button#gen:hover{opacity:0.88;}
+  button#gen:active{transform:scale(0.99);}
+  .status{
+    margin-top:10px;
+    font-size:12px;
+    color:var(--muted);
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    min-height:16px;
+  }
+  .preview-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:16px;
+  }
+  .preview-head span{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--faint);
+    text-transform:uppercase;
+    letter-spacing:0.07em;
+  }
+  .slides{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .slide-card{
+    background:var(--card);
+    border:1px solid var(--card-edge);
+    border-radius:12px;
+    overflow:hidden;
+    display:flex;
+    position:relative;
+  }
+  .insert-slide-btn{
+    background:none;
+    border:1px dashed var(--card-edge);
+    border-radius:8px;
+    color:var(--faint);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    padding:6px;
+    cursor:pointer;
+    opacity:0.5;
+    transition:opacity .15s, border-color .15s, color .15s;
+  }
+  .insert-slide-btn:hover{
+    opacity:1;
+    border-color:var(--gold);
+    color:var(--gold);
+  }
+  .add-slide-btn{
+    display:block;
+    margin:14px auto 0;
+    background:none;
+    border:1px dashed var(--card-edge);
+    border-radius:8px;
+    color:var(--faint);
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    padding:10px 16px;
+    cursor:pointer;
+  }
+  .add-slide-btn:hover{
+    color:var(--gold);
+    border-color:var(--gold);
+  }
+  .remove-slide-btn{
+    position:absolute;
+    top:8px;
+    right:8px;
+    width:24px;
+    height:24px;
+    border-radius:6px;
+    border:none;
+    background:#00000055;
+    color:var(--muted);
+    font-size:15px;
+    line-height:1;
+    cursor:pointer;
+    opacity:0;
+    z-index:4;
+    transition:opacity .15s, background .15s, color .15s;
+  }
+  .slide-card:hover .remove-slide-btn{
+    opacity:1;
+  }
+  .remove-slide-btn:hover{
+    background:var(--red, #C0392B);
+    color:#fff;
+  }
+  .highlight-toggle-btn{
+    position:absolute;
+    top:8px;
+    left:8px;
+    width:24px;
+    height:24px;
+    border-radius:6px;
+    border:none;
+    background:#00000055;
+    color:var(--muted);
+    font-size:14px;
+    line-height:1;
+    cursor:pointer;
+    opacity:0;
+    z-index:4;
+    transition:opacity .15s, background .15s, color .15s;
+  }
+  .slide-card:hover .highlight-toggle-btn{
+    opacity:1;
+  }
+  .highlight-toggle-btn:hover{
+    background:var(--gold);
+    color:#2B1D06;
+  }
+  .slide-card.highlighted{
+    border:2px solid var(--gold);
+    box-shadow:0 0 0 1px var(--gold), 0 10px 26px -10px rgba(227,178,60,0.45);
+  }
+  .slide-card.highlighted .highlight-toggle-btn{
+    opacity:1;
+    background:var(--gold);
+    color:#2B1D06;
+  }
+  .tag2{
+    width:18px;
+    min-width:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+  }
+  .secondbar-toggle-btn{
+    position:absolute;
+    bottom:8px;
+    right:8px;
+    width:24px;
+    height:24px;
+    border-radius:6px;
+    border:none;
+    background:#00000055;
+    color:var(--muted);
+    font-size:13px;
+    line-height:1;
+    cursor:pointer;
+    opacity:0;
+    z-index:4;
+    transition:opacity .15s, background .15s, color .15s;
+  }
+  .slide-card:hover .secondbar-toggle-btn, .secondbar-toggle-btn.active{
+    opacity:1;
+  }
+  .secondbar-toggle-btn:hover{
+    background:var(--gold);
+    color:#2B1D06;
+  }
+  .secondbar-toggle-btn.active{
+    color:#fff;
+  }
+  .sing-label{
+    position:absolute;
+    top:12px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:3;
+    background:var(--gold);
+    color:#2B1D06;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    padding:4px 12px;
+    border-radius:20px;
+    white-space:nowrap;
+    cursor:text;
+    outline:none;
+    min-width:10px;
+    min-height:10px;
+    transition:opacity .15s, background .15s;
+  }
+  .sing-label:empty{
+    background:#00000030;
+    opacity:0;
+  }
+  .slide-card:hover .sing-label:empty{
+    opacity:1;
+  }
+  .sing-label:empty::before{
+    content:'+ texto (opcional)';
+    color:var(--muted);
+    text-transform:none;
+    letter-spacing:normal;
+    font-weight:500;
+  }
+  .sing-label:focus{
+    opacity:1;
+    background:var(--gold);
+  }
+  .sing-label:empty:focus::before{
+    content:'';
+  }
+  #resetManual{
+    background:none;
+    border:1px solid var(--card-edge);
+    border-radius:6px;
+    color:var(--faint);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    padding:5px 10px;
+    cursor:pointer;
+  }
+  #resetManual:hover{
+    color:var(--gold);
+    border-color:var(--gold);
+  }
+  .tag{
+    width:54px;
+    min-width:54px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:19px;
+    font-weight:700;
+    color:var(--navy-fg);
+    background:var(--navy);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    letter-spacing:0.04em;
+  }
+  .slide-body{
+    flex:1;
+    padding:34px 30px 22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    min-height:120px;
+    position:relative;
+  }
+  .corner-num{
+    position:absolute;
+    bottom:8px;
+    right:12px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    opacity:0.45;
+  }
+  .slide-body p{
+    font-family:'Fraunces', serif;
+    font-size:20px;
+    line-height:1.5;
+    white-space:pre-line;
+    margin:0;
+    color:var(--ink);
+    cursor:text;
+    border-radius:6px;
+    padding:4px 8px;
+    outline:none;
+    transition:box-shadow .15s;
+  }
+  .slide-body p:hover{
+    box-shadow:0 0 0 1px var(--card-edge);
+  }
+  .slide-body p:focus{
+    box-shadow:0 0 0 2px var(--gold);
+  }
+  .preview-head .edit-hint{
+    font-family:'Inter', sans-serif;
+    font-size:11px;
+    color:var(--faint);
+    text-transform:none;
+    letter-spacing:normal;
+  }
+  .empty{
+    color:var(--faint);
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:16px;
+    text-align:center;
+    padding:60px 20px;
+    border:1px dashed var(--card-edge);
+    border-radius:12px;
+  }
+  /* ── Layout profissional do painel ── */
+  .sec-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    color:var(--gold);
+    margin:0 0 14px;
+  }
+  .sec-divider{
+    height:1px;
+    background:var(--card-edge);
+    margin:22px 0 20px;
+  }
+  .two-col{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .input-row{
+    display:flex;
+    gap:8px;
+    align-items:stretch;
+  }
+  .input-row input{ flex:1; }
+  .opt-tag{
+    font-family:'Inter', sans-serif;
+    font-size:10px;
+    color:var(--faint);
+    text-transform:none;
+    letter-spacing:normal;
+    font-weight:400;
+    margin-left:4px;
+    background:var(--card-edge);
+    padding:1px 6px;
+    border-radius:4px;
+  }
+  .ck{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-size:14px;
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    cursor:pointer;
+    margin:0;
+    text-transform:none;
+    letter-spacing:normal;
+  }
+  .ck input[type=checkbox]{
+    width:16px; height:16px;
+    accent-color:var(--gold);
+    flex-shrink:0;
+    cursor:pointer;
+    margin:0;
+  }
+  .check-row{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  .bar-card{
+    background:#10132450;
+    border:1px solid var(--card-edge);
+    border-radius:10px;
+    padding:14px 16px;
+  }
+  .master-ck{
+    font-weight:500;
+  }
+  .bar-sub{
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid var(--card-edge);
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    padding-left:4px;
+  }
+  .letra-hd{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+  }
+  .letra-hd label{
+    margin:0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Letra para <em>Slides</em></h1>
+      <div class="tagline">cole a letra → baixe o PowerPoint</div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="panel">
+      <!-- ═══ MÚSICA ═══ -->
+      <div class="sec-label">Música</div>
+
+      <label for="titulo">Título</label>
+      <div class="input-row">
+        <input type="text" id="titulo" placeholder="Ex: Águas Purificadoras" autocomplete="off">
+        <button type="button" id="buscarLetra">Buscar ↗</button>
+      </div>
+      <div class="hint">Busca no letras.mus.br em nova aba — copie e cole a letra abaixo.</div>
+
+      <label for="artista">Artista <span class="opt-tag">opcional</span></label>
+      <input type="text" id="artista" placeholder="Ex: Fernandinho" autocomplete="off">
+
+      <!-- ═══ TIPOGRAFIA ═══ -->
+      <div class="sec-divider"></div>
+      <div class="sec-label">Tipografia</div>
+
+      <div class="two-col">
+        <div>
+          <label for="fonteFamilia">Fonte</label>
+          <select id="fonteFamilia">
+            <option value="Georgia">Georgia</option>
+            <option value="Arial">Arial</option>
+            <option value="Calibri" selected>Calibri</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Trebuchet MS">Trebuchet MS</option>
+          </select>
+        </div>
+        <div>
+          <label for="alinhamento">Alinhamento</label>
+          <select id="alinhamento">
+            <option value="center" selected>Centralizado</option>
+            <option value="left">Esquerda</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="fonteSize">Tamanho do texto</label>
+      <select id="fonteSize">
+        <option value="28">Pequeno — 28pt</option>
+        <option value="36">Médio — 36pt</option>
+        <option value="44">Grande — 44pt</option>
+        <option value="54" selected>Extra grande — 54pt</option>
+        <option value="66">Gigante — 66pt</option>
+        <option value="custom">Personalizado…</option>
+      </select>
+      <input type="number" id="fonteSizeCustom" min="10" max="120" value="54"
+        placeholder="Tamanho em pt"
+        style="display:none; margin-top:8px; width:100%; background:#10132480; border:1px solid var(--card-edge); border-radius:8px; color:var(--ink); font-family:'Inter',sans-serif; font-size:15px; padding:11px 12px; outline:none; transition:border-color .15s;">
+
+      <div class="check-row" style="margin-top:14px;">
+        <label class="ck"><input type="checkbox" id="negrito" checked><span>Negrito</span></label>
+      </div>
+
+      <!-- ═══ SLIDES ═══ -->
+      <div class="sec-divider"></div>
+      <div class="sec-label">Slides</div>
+
+      <label for="linhasPorSlide">Divisão das linhas</label>
+      <select id="linhasPorSlide">
+        <option value="auto" selected>Automático (recomendado)</option>
+        <option value="1">1 linha por slide</option>
+        <option value="2">2 linhas por slide</option>
+        <option value="3">3 linhas por slide</option>
+        <option value="4">4 linhas por slide</option>
+        <option value="0">Sem divisão — 1 slide por estrofe</option>
+      </select>
+
+      <!-- ═══ BARRA LATERAL ═══ -->
+      <div class="sec-divider"></div>
+      <div class="sec-label">Barra lateral</div>
+
+      <div class="bar-card">
+        <label class="ck master-ck">
+          <input type="checkbox" id="showBar" checked>
+          <span>Mostrar barra colorida</span>
+        </label>
+        <div id="barOptions" class="bar-sub">
+          <label class="ck"><input type="checkbox" id="numSlide" checked><span>Número no slide</span></label>
+          <label class="ck">
+            <input type="checkbox" id="numReverse" checked>
+            <span>Contagem regressiva <em style="color:var(--faint); font-style:normal;">(1 = último)</em></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- ═══ LETRA ═══ -->
+      <div class="sec-divider"></div>
+
+      <div class="letra-hd">
+        <label for="letra" style="margin:0;">Letra da música</label>
+        <div style="display:flex;gap:8px;">
+          <input type="file" id="importFile" accept=".pptx" style="display:none;">
+          <button type="button" id="importBtn">📂 Importar</button>
+          <button type="button" id="limparLetra">🗑 Limpar</button>
+        </div>
+      </div>
+      <div class="hint" id="importStatus" style="display:none;"></div>
+      <textarea id="letra" placeholder="Cole a letra aqui.
+
+Separe cada trecho (verso, refrão) com linha em branco — cada trecho vira um slide.
+Use --- numa linha sozinha para forçar quebra dentro de um trecho."></textarea>
+      <div class="hint">Linha em branco = nova estrofe. <code>---</code> = forçar quebra de slide.</div>
+
+      <!-- ═══ CORES ═══ -->
+      <div class="sec-divider"></div>
+      <div class="sec-label">Cores</div>
+
+      <div class="color-panel">
+        <div class="color-row">
+          <span class="color-row-label">Fundo</span>
+          <div class="swatches" id="swatches">
+            <div class="swatch" data-bg="3D1F1A" data-fg="F3F0E6" style="background:#3D1F1A" title="Vermelho escuro"></div>
+            <div class="swatch" data-bg="2B2006" data-fg="F3F0E6" style="background:#2B2006" title="Dourado escuro"></div>
+            <div class="swatch" data-bg="1A2B20" data-fg="EDE7D9" style="background:#1A2B20" title="Verde escuro"></div>
+            <div class="swatch active" data-bg="14182B" data-fg="F3F0E6" style="background:#14182B" title="Azul escuro (padrão)"></div>
+            <div class="swatch" data-bg="0B0B0B" data-fg="FFFFFF" style="background:#0B0B0B" title="Preto"></div>
+            <div class="swatch" data-bg="F6F1E4" data-fg="1A1A1A" style="background:#F6F1E4" title="Creme"></div>
+          </div>
+        </div>
+        <div class="color-row">
+          <span class="color-row-label">Texto</span>
+          <div class="swatches" id="swatchesText">
+            <div class="swatch" data-fg="C0392B" style="background:#C0392B" title="Vermelho"></div>
+            <div class="swatch" data-fg="E3B23C" style="background:#E3B23C" title="Dourado"></div>
+            <div class="swatch" data-fg="2E8B57" style="background:#2E8B57" title="Verde"></div>
+            <div class="swatch" data-fg="1B3358" style="background:#1B3358" title="Azul marinho"></div>
+            <div class="swatch" data-fg="000000" style="background:#000000" title="Preto"></div>
+            <div class="swatch active" data-fg="F3F0E6" style="background:#F3F0E6" title="Creme (padrão)"></div>
+          </div>
+        </div>
+        <div class="color-row">
+          <span class="color-row-label">Preenchimento</span>
+          <div class="swatches" id="swatchesHL">
+            <div class="swatch" data-hl="C0392B" style="background:#C0392B" title="Vermelho"></div>
+            <div class="swatch" data-hl="E3B23C" style="background:#E3B23C" title="Dourado"></div>
+            <div class="swatch" data-hl="2E8B57" style="background:#2E8B57" title="Verde"></div>
+            <div class="swatch" data-hl="1B3358" style="background:#1B3358" title="Azul marinho"></div>
+            <div class="swatch" data-hl="14182B" style="background:#14182B" title="Azul escuro"></div>
+            <div class="swatch swatch-none active" data-hl="" title="Sem preenchimento">
+              <svg viewBox="0 0 24 24"><line x1="3" y1="3" x2="21" y2="21" stroke="#9098B5" stroke-width="2"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="color-row">
+          <span class="color-row-label">2ª barra</span>
+          <div class="swatches" id="swatchesSecondBar">
+            <div class="swatch active" data-color="C0392B" style="background:#C0392B" title="Vermelho (padrão)"></div>
+            <div class="swatch" data-color="E3B23C" style="background:#E3B23C" title="Dourado"></div>
+            <div class="swatch" data-color="2E8B57" style="background:#2E8B57" title="Verde"></div>
+            <div class="swatch" data-color="1B3358" style="background:#1B3358" title="Azul marinho"></div>
+            <div class="swatch" data-color="14182B" style="background:#14182B" title="Azul escuro"></div>
+            <div class="swatch" data-color="000000" style="background:#000000" title="Preto"></div>
+          </div>
+        </div>
+      </div>
+
+      <label class="ck" style="margin-top:14px;"><input type="checkbox" id="marcarUltima" checked><span>Marcar último slide com 2ª barra automática</span></label>
+      <div class="hint" style="margin-top:4px;">Faixa colorida na lateral direita — sinaliza fim da música. Use 🏁 em qualquer slide para controle manual.</div>
+
+      <button id="gen" style="margin-top:24px;">⬇ Baixar PowerPoint (.pptx)</button>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="panel">
+      <div class="preview-head">
+        <span>Pré-visualização</span>
+        <span id="count">0 slides</span>
+      </div>
+      <div class="edit-hint" style="margin:-10px 0 12px; display:flex; justify-content:space-between; align-items:center;">
+        <span>Clique em qualquer texto para editar. Use os botões "+" para inserir slides.</span>
+        <button type="button" id="resetManual" style="display:none;">Desfazer edições manuais</button>
+      </div>
+      <div class="slides" id="slides">
+        <div class="empty">Cole a letra ao lado para ver os slides aqui</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let bgColor = '14182B';
+let fgColor = 'F3F0E6';
+let hlColor = null; // null = sem preenchimento
+let secondBarColor = 'C0392B';
+let secondBar = new Map(); // índice -> cor hex da 2ª barra (marcação de fim/atenção)
+let manualSlides = null; // null = deriva automaticamente da letra; array = modo manual (editado/slides adicionados)
+let pendingFocusIndex = null; // índice do novo slide para focar após re-renderizar
+let highlighted = new Map(); // índice -> texto do selo ("" = destacado sem texto, só a marcação visual)
+const DEFAULT_SING_LABEL = '🎤 Cante com a gente';
+
+document.getElementById('buscarLetra').addEventListener('click', ()=>{
+  const titulo = document.getElementById('titulo').value.trim();
+  const artista = document.getElementById('artista').value.trim();
+  if(!titulo && !artista){
+    document.getElementById('titulo').focus();
+    return;
+  }
+  const query = [artista, titulo].filter(Boolean).join(' ');
+  const url = 'https://www.letras.mus.br/?q=' + encodeURIComponent(query);
+  window.open(url, '_blank', 'noopener');
+});
+
+// Importa um .pptx gerado por esta própria ferramenta, lendo o texto de cada slide.
+async function parsePptxFile(file){
+  const buf = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buf);
+  const parser = new DOMParser();
+
+  const presXml = await zip.file('ppt/presentation.xml').async('string');
+  const relsXml = await zip.file('ppt/_rels/presentation.xml.rels').async('string');
+  const presDoc = parser.parseFromString(presXml, 'application/xml');
+  const relsDoc = parser.parseFromString(relsXml, 'application/xml');
+
+  const relMap = {};
+  Array.from(relsDoc.getElementsByTagName('Relationship')).forEach(r=>{
+    relMap[r.getAttribute('Id')] = r.getAttribute('Target');
+  });
+
+  const sldIdNodes = Array.from(presDoc.getElementsByTagName('p:sldId'));
+  const slidePaths = sldIdNodes.map(node=>{
+    const rId = node.getAttribute('r:id');
+    const target = relMap[rId] || '';
+    return 'ppt/' + target.replace(/^\.?\/?/, '');
+  });
+
+  // Altura (em EMU) da caixa de texto principal usada pelos slides de letra
+  // gerados por esta ferramenta (~5.8in). Serve para diferenciar o slide de
+  // título/artista (caixa menor) dos slides de letra de fato.
+  const LYRIC_BOX_MIN_HEIGHT_EMU = 4800000;
+  const HIGHLIGHT_BG_HEX = '4A2C09';
+  // O selo de destaque usa uma caixa larga (largura ~full slide) e baixa (~0.5in)
+  const LABEL_MIN_WIDTH_EMU = 8000000;
+  const LABEL_MAX_HEIGHT_EMU = 1000000;
+
+  const lines = [];
+  const highlightIdx = new Map();
+
+  for(const path of slidePaths){
+    const zf = zip.file(path);
+    if(!zf) continue;
+    const xml = await zf.async('string');
+    const doc = parser.parseFromString(xml, 'application/xml');
+    const shapes = Array.from(doc.getElementsByTagName('p:sp'));
+    const isHi = xml.includes(HIGHLIGHT_BG_HEX);
+
+    let bestText = null;
+    let bestHeight = -1;
+    let labelText = '';
+
+    shapes.forEach(sp=>{
+      const txBody = sp.getElementsByTagName('p:txBody')[0];
+      if(!txBody) return;
+      const paras = Array.from(txBody.getElementsByTagName('a:p'));
+      const text = paras
+        .map(p => Array.from(p.getElementsByTagName('a:t')).map(t => t.textContent).join(''))
+        .join('\n');
+      const ext = sp.getElementsByTagName('a:ext')[0];
+      const cx = ext ? parseInt(ext.getAttribute('cx'), 10) : 0;
+      const cy = ext ? parseInt(ext.getAttribute('cy'), 10) : 0;
+      if(isHi && cx > LABEL_MIN_WIDTH_EMU && cy < LABEL_MAX_HEIGHT_EMU){
+        labelText = text.trim();
+        return;
+      }
+      if(!text.trim()) return;
+      if(cy > bestHeight){
+        bestHeight = cy;
+        bestText = text;
+      }
+    });
+
+    // Ignora slides que não têm a caixa de texto grande (ex: slide de título/artista)
+    if(bestText === null || bestHeight < LYRIC_BOX_MIN_HEIGHT_EMU) continue;
+
+    if(isHi) highlightIdx.set(lines.length, labelText);
+    lines.push(bestText.trim());
+  }
+
+  return { lines, highlightIdx };
+}
+
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  document.getElementById('importFile').click();
+});
+
+document.getElementById('importFile').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const statusEl = document.getElementById('importStatus');
+  const btn = document.getElementById('importBtn');
+  statusEl.style.display = 'block';
+  statusEl.textContent = 'Importando...';
+  btn.disabled = true;
+  try{
+    const { lines, highlightIdx } = await parsePptxFile(file);
+    if(lines.length === 0){
+      statusEl.textContent = 'Não encontrei slides de letra nesse arquivo (ele foi gerado por esta ferramenta?).';
+    } else {
+      manualSlides = lines;
+      highlighted = highlightIdx;
+      pendingFocusIndex = null;
+      render();
+      statusEl.textContent = lines.length + ' slide(s) importado(s) com sucesso. Edite normalmente e gere de novo quando terminar.';
+    }
+  }catch(err){
+    console.error(err);
+    statusEl.textContent = 'Não consegui ler esse arquivo. Confirme que é um .pptx gerado por esta ferramenta.';
+  }finally{
+    btn.disabled = false;
+    e.target.value = '';
+  }
+});
+
+document.getElementById('limparLetra').addEventListener('click', ()=>{
+  const letraEl = document.getElementById('letra');
+  const temConteudo = letraEl.value.trim().length > 0 || manualSlides;
+  if(temConteudo && !confirm('Isso vai apagar a letra atual (e os ajustes manuais feitos nos slides) para você começar uma nova música. Continuar?')){
+    return;
+  }
+  letraEl.value = '';
+  document.getElementById('titulo').value = '';
+  document.getElementById('artista').value = '';
+  document.getElementById('importStatus').style.display = 'none';
+  manualSlides = null;
+  highlighted = new Map();
+  secondBar = new Map();
+  render();
+  letraEl.focus();
+});
+
+document.querySelectorAll('#swatches .swatch').forEach(sw=>{
+  sw.addEventListener('click', ()=>{
+    document.querySelectorAll('#swatches .swatch').forEach(s=>s.classList.remove('active'));
+    sw.classList.add('active');
+    bgColor = sw.dataset.bg;
+    render();
+  });
+});
+
+document.querySelectorAll('#swatchesText .swatch').forEach(sw=>{
+  sw.addEventListener('click', ()=>{
+    document.querySelectorAll('#swatchesText .swatch').forEach(s=>s.classList.remove('active'));
+    sw.classList.add('active');
+    fgColor = sw.dataset.fg;
+    render();
+  });
+});
+
+document.querySelectorAll('#swatchesHL .swatch').forEach(sw=>{
+  sw.addEventListener('click', ()=>{
+    document.querySelectorAll('#swatchesHL .swatch').forEach(s=>s.classList.remove('active'));
+    sw.classList.add('active');
+    hlColor = sw.dataset.hl || null;
+    render();
+  });
+});
+
+document.querySelectorAll('#swatchesSecondBar .swatch').forEach(sw=>{
+  sw.addEventListener('click', ()=>{
+    document.querySelectorAll('#swatchesSecondBar .swatch').forEach(s=>s.classList.remove('active'));
+    sw.classList.add('active');
+    secondBarColor = sw.dataset.color;
+    render();
+  });
+});
+
+document.getElementById('marcarUltima').addEventListener('change', render);
+
+function estimateBudget(fontSize){
+  // O budget de caracteres controla quantas linhas cabem num slide no modo auto.
+  // Como MAX_LINES=2 já limita a 2 linhas, usamos valores generosos para não
+  // quebrar estrofes de 2 linhas curtas em slides separados desnecessariamente.
+  if(fontSize <= 28) return 92;
+  if(fontSize <= 36) return 72;
+  if(fontSize <= 44) return 54;
+  if(fontSize <= 54) return 54; // era 42 — mantém 2 linhas curtas juntas
+  return 54;                    // era 32 — idem para Gigante
+}
+
+function estimateLineWidth(fontSize){
+  return Math.max(10, Math.round(estimateBudget(fontSize) / 2));
+}
+
+// Quebra uma linha longa em duas partes o mais equilibradas possível,
+// evitando que sobre uma "palavra órfã" sozinha numa linha.
+function balanceLine(line, maxChars){
+  if(line.length <= maxChars) return [line];
+  const words = line.split(' ');
+  if(words.length <= 1) return [line];
+  let best = null;
+  let bestDiff = Infinity;
+  let acc = '';
+  for(let i=0; i<words.length-1; i++){
+    acc = (acc ? acc + ' ' : '') + words[i];
+    const rest = words.slice(i+1).join(' ');
+    const diff = Math.abs(acc.length - rest.length);
+    if(diff < bestDiff){
+      bestDiff = diff;
+      best = [acc, rest];
+    }
+  }
+  if(!best) return [line];
+  const result = [];
+  best.forEach(part=>{
+    if(part.length > maxChars){
+      result.push(...balanceLine(part, maxChars));
+    }else{
+      result.push(part);
+    }
+  });
+  return result;
+}
+
+// Aplica o balanceamento em cada slide já montado.
+// Se uma linha original for muito longa, quebra ela ao meio (balanceLine).
+// Garante que o resultado final tenha sempre no máximo 2 linhas por slide:
+// se após expandir sobrar mais de 2, agrupa em chunks de 2.
+function applyLineBalance(stanzas, fontSize){
+  const budget = estimateLineWidth(fontSize);
+  const MAX_LINES = 2;
+  const result = [];
+  stanzas.forEach(text=>{
+    const originalLines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    // Expande cada linha original que for muito longa, quebrando ao meio
+    const expanded = originalLines.flatMap(line => balanceLine(line, budget));
+    // Agrupa em chunks de MAX_LINES sem nunca misturar além do limite
+    for(let i = 0; i < expanded.length; i += MAX_LINES){
+      result.push(expanded.slice(i, i + MAX_LINES).join('\n'));
+    }
+  });
+  return result;
+}
+
+function autoGroupLines(lines, budget){
+  const MAX_LINES = 2; // nunca mais que 2 linhas por slide no modo automático
+  const slides = [];
+  let current = [];
+  let currentLen = 0;
+  lines.forEach(line=>{
+    const projected = currentLen + line.length + (current.length ? 1 : 0);
+    if(current.length > 0 && (projected > budget || current.length >= MAX_LINES)){
+      slides.push(current.join('\n'));
+      current = [line];
+      currentLen = line.length;
+    }else{
+      current.push(line);
+      currentLen += line.length + (current.length > 1 ? 1 : 0);
+    }
+  });
+  if(current.length) slides.push(current.join('\n'));
+  return slides;
+}
+
+function parseStanzas(text){
+  const normalized = text.replace(/\r\n/g, '\n').trim();
+  if(!normalized) return [];
+  const modeRaw = document.getElementById('linhasPorSlide').value;
+  const fontSize = getActiveFontSize();
+  const rawStanzas = normalized.split(/\n\s*\n/);
+  const slides = [];
+  rawStanzas.forEach(st=>{
+    st.split(/^\s*---\s*$/m).forEach(part=>{
+      const trimmed = part.trim();
+      if(!trimmed) return;
+      const lines = trimmed.split('\n').map(l=>l.trim()).filter(Boolean);
+      if(modeRaw === 'auto'){
+        slides.push(...autoGroupLines(lines, estimateBudget(fontSize)));
+        return;
+      }
+      const linesPerSlide = parseInt(modeRaw, 10);
+      if(linesPerSlide === 0){
+        slides.push(lines.join('\n'));
+        return;
+      }
+      for(let i=0; i<lines.length; i += linesPerSlide){
+        slides.push(lines.slice(i, i + linesPerSlide).join('\n'));
+      }
+    });
+  });
+  return slides;
+}
+
+function normalizeForMatch(s){
+  return s
+    .replace(/\n/g, ' ')
+    .toLowerCase()
+    .replace(/[.,!?;:"'()\-]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getRepeatColors(stanzas){
+  const STEPS = [
+    { bg: 'C0392B', fg: 'FFF5EC' }, // 1ª repetição consecutiva: vermelho
+    { bg: 'E0A526', fg: '2B1D06' }, // 2ª repetição consecutiva: amarelo
+    { bg: '2E8B57', fg: 'F3F0E6' }  // 3ª repetição consecutiva (ou mais): verde
+  ];
+  let streak = 0;
+  return stanzas.map((s, i)=>{
+    const isRepeat = i > 0 && normalizeForMatch(s) === normalizeForMatch(stanzas[i-1]);
+    streak = isRepeat ? streak + 1 : 0;
+    if(streak === 0){
+      return { bg: '1B3358', fg: 'F3F0E6', matches: [] };
+    }
+    const step = STEPS[Math.min(streak, STEPS.length) - 1];
+    return { bg: step.bg, fg: step.fg, matches: [i] }; // repete o slide anterior (número 1-based = i)
+  });
+}
+
+function currentStanzas(){
+  if(manualSlides) return manualSlides;
+  const letra = document.getElementById('letra').value;
+  const fontSize = getActiveFontSize();
+  return applyLineBalance(parseStanzas(letra), fontSize);
+}
+
+function enterManualMode(){
+  if(!manualSlides) manualSlides = currentStanzas().slice();
+}
+
+function shiftMapOnInsert(map, atIndex){
+  const next = new Map();
+  map.forEach((val, idx) => next.set(idx >= atIndex ? idx + 1 : idx, val));
+  return next;
+}
+
+function shiftMapOnRemove(map, atIndex){
+  const next = new Map();
+  map.forEach((val, idx) => {
+    if(idx === atIndex) return;
+    next.set(idx > atIndex ? idx - 1 : idx, val);
+  });
+  return next;
+}
+
+function render(){
+  const stanzas = currentStanzas();
+  const container = document.getElementById('slides');
+  document.getElementById('count').textContent = stanzas.length + (stanzas.length===1 ? ' slide' : ' slides');
+  document.getElementById('resetManual').style.display = manualSlides ? 'inline-block' : 'none';
+  container.innerHTML = '';
+  if(stanzas.length === 0){
+    container.innerHTML = '<div class="empty">Cole a letra ao lado para ver os slides aqui</div>';
+    const addFirst = document.createElement('button');
+    addFirst.type = 'button';
+    addFirst.className = 'add-slide-btn';
+    addFirst.textContent = '+ Adicionar slide em branco';
+    addFirst.addEventListener('click', ()=>{
+      enterManualMode();
+      manualSlides.push('');
+      pendingFocusIndex = 0;
+      render();
+    });
+    container.appendChild(addFirst);
+    return;
+  }
+  const repeatColors = getRepeatColors(stanzas);
+  const fontFamily = document.getElementById('fonteFamilia').value;
+  const fontSize = getActiveFontSize();
+  const bold = document.getElementById('negrito').checked;
+  const showBar = document.getElementById('showBar').checked;
+  const showNum = showBar && document.getElementById('numSlide').checked;
+  const numReverse = document.getElementById('numReverse').checked;
+  const align = document.getElementById('alinhamento').value;
+  const autoMarkLast = document.getElementById('marcarUltima').checked;
+  // Proporção real: largura do container preview ÷ largura do slide PPTX (13.33")
+  // 1 ponto PPTX = 1/72 polegada. A largura do preview em px ÷ (13.33 * 96px/in) dá o fator.
+  // Usamos o container de slides para medir; se ainda não renderizou, cai em 0.40.
+  const containerWidth = document.getElementById('slides').offsetWidth || 0;
+  const pptxWidthPx = 13.33 * 96; // 13.33 polegadas × 96 dpi = ~1280px
+  const scaleFactor = containerWidth > 0 ? containerWidth / pptxWidthPx : 0.40;
+  // fontSize em pt → px no preview: 1pt = 1/72in, × 96dpi = 1.333px, × scaleFactor
+  const previewFontSize = Math.round(fontSize * 1.333 * scaleFactor);
+
+  function makeInsertBtn(atIndex){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'insert-slide-btn';
+    btn.textContent = '+ inserir slide aqui';
+    btn.addEventListener('click', ()=>{
+      enterManualMode();
+      manualSlides.splice(atIndex, 0, '');
+      highlighted = shiftMapOnInsert(highlighted, atIndex);
+      secondBar = shiftMapOnInsert(secondBar, atIndex);
+      pendingFocusIndex = atIndex;
+      render();
+    });
+    return btn;
+  }
+
+  container.appendChild(makeInsertBtn(0));
+
+  stanzas.forEach((s, i)=>{
+    const isHi = highlighted.has(i);
+    const isLastSlide = i === stanzas.length - 1;
+    const override = secondBar.get(i); // undefined = segue a regra automática | true/false = forçado manualmente
+    const showBar2 = override !== undefined ? override : (autoMarkLast && isLastSlide);
+    const card = document.createElement('div');
+    card.className = 'slide-card' + (isHi ? ' highlighted' : '');
+    card.style.background = isHi
+      ? 'linear-gradient(135deg, #7a4a12, #2e1c06)'
+      : '#' + bgColor;
+    const total = stanzas.length;
+    const tip = repeatColors[i].matches.length
+      ? 'Repete o slide ' + String(repeatColors[i].matches[0]).padStart(2,'0')
+      : 'Frase única (ou não repete em seguida)';
+    const slideNum = numReverse ? (total - i) : (i + 1);
+    const tagHtml = showBar
+      ? `<div class="tag" title="${tip}" style="background:#${repeatColors[i].bg}; color:#${repeatColors[i].fg}">${showNum ? String(slideNum).padStart(2,'0') : ''}</div>`
+      : '';
+    const badgeHtml = isHi
+      ? `<div class="sing-label" contenteditable="true" spellcheck="false" title="Clique para editar (pode deixar em branco)">${(highlighted.get(i) || '').replace(/</g,'&lt;')}</div>`
+      : '';
+    const tag2Html = showBar2
+      ? `<div class="tag2" style="background:#${secondBarColor}" title="2ª barra — marcação de fim/atenção"></div>`
+      : '';
+    card.innerHTML = `${tagHtml}${badgeHtml}
+      <div class="slide-body"><p contenteditable="true" spellcheck="false" title="Clique para editar o texto deste slide" style="color:#${fgColor}; font-family:'${fontFamily}', sans-serif; font-size:${previewFontSize}px; font-weight:${bold ? 700 : 400}; text-align:${align}${hlColor ? `; background:#${hlColor}; padding:6px 14px; border-radius:4px;` : ''}">${s.replace(/</g,'&lt;').toLocaleUpperCase('pt-BR')}</p></div>
+      ${tag2Html}
+      <button type="button" class="highlight-toggle-btn" title="${isHi ? 'Remover destaque' : 'Destacar este slide (ex: cante com a gente)'}">${isHi ? '★' : '☆'}</button>
+      <button type="button" class="remove-slide-btn" title="Remover este slide">×</button>
+      <button type="button" class="secondbar-toggle-btn${showBar2 ? ' active' : ''}" title="${showBar2 ? 'Desligar a 2ª barra neste slide' : 'Ligar a 2ª barra neste slide'}">🏁</button>`;
+    container.appendChild(card);
+    const p = card.querySelector('p');
+    p.addEventListener('blur', ()=>{
+      enterManualMode();
+      const edited = p.innerText.replace(/\r\n/g, '\n').trim();
+      if(manualSlides[i] !== edited){
+        manualSlides[i] = edited;
+        render();
+      }
+    });
+    p.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        document.execCommand('insertLineBreak');
+      }
+    });
+    card.querySelector('.secondbar-toggle-btn').addEventListener('click', ()=>{
+      secondBar.set(i, !showBar2);
+      render();
+    });
+    const label = card.querySelector('.sing-label');
+    if(label){
+      label.addEventListener('blur', ()=>{
+        const edited = label.innerText.replace(/\r\n/g, ' ').trim();
+        if(highlighted.get(i) !== edited){
+          highlighted.set(i, edited);
+          render();
+        }
+      });
+      label.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          label.blur();
+        }
+      });
+    }
+    card.querySelector('.highlight-toggle-btn').addEventListener('click', ()=>{
+      if(highlighted.has(i)) highlighted.delete(i);
+      else highlighted.set(i, DEFAULT_SING_LABEL);
+      render();
+    });
+    card.querySelector('.remove-slide-btn').addEventListener('click', ()=>{
+      enterManualMode();
+      manualSlides.splice(i, 1);
+      highlighted = shiftMapOnRemove(highlighted, i);
+      secondBar = shiftMapOnRemove(secondBar, i);
+      render();
+    });
+    if(i === pendingFocusIndex){
+      pendingFocusIndex = null;
+      p.focus();
+    }
+    container.appendChild(makeInsertBtn(i + 1));
+  });
+}
+
+document.getElementById('resetManual').addEventListener('click', ()=>{
+  manualSlides = null;
+  highlighted = new Map();
+  secondBar = new Map();
+  render();
+});
+
+document.getElementById('letra').addEventListener('input', ()=>{
+  manualSlides = null;
+  highlighted = new Map();
+  secondBar = new Map();
+  render();
+});
+document.getElementById('linhasPorSlide').addEventListener('change', ()=>{
+  manualSlides = null;
+  highlighted = new Map();
+  secondBar = new Map();
+  render();
+});
+document.getElementById('fonteSize').addEventListener('change', ()=>{
+  const isCustom = document.getElementById('fonteSize').value === 'custom';
+  document.getElementById('fonteSizeCustom').style.display = isCustom ? 'block' : 'none';
+  render();
+});
+document.getElementById('fonteSizeCustom').addEventListener('input', render);
+document.getElementById('fonteFamilia').addEventListener('change', render);
+document.getElementById('negrito').addEventListener('change', render);
+document.getElementById('showBar').addEventListener('change', ()=>{
+  document.getElementById('barOptions').style.display =
+    document.getElementById('showBar').checked ? 'flex' : 'none';
+  render();
+});
+document.getElementById('numSlide').addEventListener('change', render);
+document.getElementById('numReverse').addEventListener('change', render);
+document.getElementById('alinhamento').addEventListener('change', render);
+
+function getActiveFontSize(){
+  const sel = document.getElementById('fonteSize').value;
+  if(sel === 'custom'){
+    const v = parseInt(document.getElementById('fonteSizeCustom').value, 10);
+    return (isNaN(v) || v < 10) ? 54 : Math.min(v, 120);
+  }
+  return parseInt(sel, 10);
+}
+
+document.getElementById('gen').addEventListener('click', async ()=>{
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  const statusEl = document.getElementById('status');
+  const titulo = document.getElementById('titulo').value.trim();
+  const artista = document.getElementById('artista').value.trim();
+  const letra = document.getElementById('letra').value;
+  const fontSize = getActiveFontSize();
+  const fontFamily = document.getElementById('fonteFamilia').value;
+  const bold = document.getElementById('negrito').checked;
+  const showBar = document.getElementById('showBar').checked;
+  const showNum = showBar && document.getElementById('numSlide').checked;
+  const numReverse = document.getElementById('numReverse').checked;
+  const align = document.getElementById('alinhamento').value;
+  const autoMarkLast = document.getElementById('marcarUltima').checked;
+  const stanzas = currentStanzas();
+
+  if(stanzas.length === 0){
+    statusEl.textContent = 'Cole a letra da música primeiro.';
+    return;
+  }
+
+  statusEl.textContent = 'Gerando...';
+
+  try{
+    const pptx = new window.PptxGenJS();
+    pptx.defineLayout({ name:'WIDE', width:13.33, height:7.5 });
+    pptx.layout = 'WIDE';
+    const SLIDE_H = 7.5, BAR_W = 0.70;
+    const repeatColors = getRepeatColors(stanzas);
+
+    if(titulo){
+      const s = pptx.addSlide();
+      s.background = { color: bgColor };
+      s.addText(titulo.toLocaleUpperCase('pt-BR'), {
+        x:0.5, y: artista ? 2.2 : 2.8, w:12.33, h:1.8,
+        align:'center', fontFace:fontFamily, fontSize:60, bold:true, color: fgColor
+      });
+      if(artista){
+        s.addText(artista, {
+          x:0.5, y:4.3, w:12.33, h:1.2,
+          align:'center', fontFace:fontFamily, italic:true, fontSize:40, color: fgColor
+        });
+      }
+    }
+
+    stanzas.forEach((txt, idx)=>{
+      const s = pptx.addSlide();
+      const isHi = highlighted.has(idx);
+      const isLastSlide = idx === stanzas.length - 1;
+      const override = secondBar.get(idx);
+      const showBar2 = override !== undefined ? override : (autoMarkLast && isLastSlide);
+      s.background = { color: isHi ? '4A2C09' : bgColor };
+      const BAR2_W = 0.28;
+      const textX = showBar ? BAR_W + 0.3 : 0.8;
+      const textW = (showBar ? (13.33 - BAR_W - 0.6) : 11.73) - (showBar2 ? BAR2_W : 0);
+      const textContent = txt.toLocaleUpperCase('pt-BR');
+      const textOpts = {
+        x:textX, y:1.0, w:textW, h:5.8,
+        align:align, valign:'middle',
+        fontFace:fontFamily, fontSize: fontSize, bold: bold, color: fgColor,
+        lineSpacingMultiple: 1.35, fit:'shrink'
+      };
+      if(hlColor){
+        s.addShape(pptx.ShapeType.rect, {
+          x:textX - 0.1, y:1.0, w:textW + 0.2, h:5.8,
+          fill:{ color: hlColor }, line:{ type:'none' }
+        });
+      }
+      s.addText(textContent, textOpts);
+      if(showBar){
+        const { bg, fg } = repeatColors[idx];
+        const slideNum = numReverse ? (stanzas.length - idx) : (idx + 1);
+        s.addShape(pptx.ShapeType.rect, {
+          x:0, y:0, w:BAR_W, h:SLIDE_H,
+          fill:{ color: bg }, line:{ type:'none' }
+        });
+        if(showNum){
+          s.addText(String(slideNum).padStart(2,'0'), {
+            x:0, y:0, w:BAR_W, h:SLIDE_H,
+            align:'center', valign:'middle',
+            fontFace:'IBM Plex Mono', fontSize:22, bold:true, color: fg
+          });
+        }
+      }
+      if(showBar2){
+        s.addShape(pptx.ShapeType.rect, {
+          x:13.33 - BAR2_W, y:0, w:BAR2_W, h:SLIDE_H,
+          fill:{ color: secondBarColor }, line:{ type:'none' }
+        });
+      }
+      if(isHi){
+        s.addShape(pptx.ShapeType.rect, {
+          x:0.08, y:0.08, w:13.33 - 0.16, h:SLIDE_H - 0.16,
+          fill:{ type:'none' }, line:{ color:'E3B23C', width:4 }
+        });
+        const labelText = (highlighted.get(idx) || '').trim();
+        if(labelText){
+          s.addText(labelText, {
+            x:0, y:0.3, w:13.33, h:0.5,
+            align:'center', fontFace:fontFamily, fontSize:16, bold:true, color:'E3B23C'
+          });
+        }
+      }
+    });
+
+    const filename = (titulo ? titulo.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-').toLowerCase() : 'letra-slides') + '.pptx';
+    await pptx.writeFile({ fileName: filename });
+    statusEl.textContent = 'Pronto! Verifique seus downloads.';
+  }catch(err){
+    console.error(err);
+    statusEl.textContent = 'Erro ao gerar o arquivo.';
+  }
+});
+
+render();
+</script>
+</body>
+</html>
